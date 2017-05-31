@@ -1,0 +1,6 @@
+{
+    "driver": "postgresql",
+    "keyNamingConvention": "camelCase",
+    "pivotNameConnector": "_",
+    "autoForeignKeys": true
+}
