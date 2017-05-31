@@ -18,6 +18,7 @@ extension Config{
     private func setupPreparations() throws {
 
         preparations.append(Product.self)
+        preparations.append(Store.self)
     }
 }
 
