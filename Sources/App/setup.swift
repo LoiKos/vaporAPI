@@ -17,6 +17,7 @@ extension Config{
     // Care if in your database you have 'fluent' table registering your other tables then they won't be added during preparations phase.
     private func setupPreparations() throws {
 
+        preparations.append(Product.self)
     }
 }
 
