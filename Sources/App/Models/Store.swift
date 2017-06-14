@@ -8,6 +8,7 @@ final class Store: Model, NodeInitializable{
     
     static let idKey : String = "refstore"
     static let idType : IdentifierType = .custom("varchar(255) primary key")
+    static let foreignIdKey = "refstore"
     var id: Identifier? = ""
     
     let refstore : String

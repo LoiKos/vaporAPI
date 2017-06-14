@@ -7,6 +7,7 @@ final class Product: Model,NodeInitializable {
     let storage = Storage()
     
     static let idKey: String = "refproduct"
+    static let foreignIdKey = "refproduct"
     static let idType: IdentifierType = .custom("varchar(255) primary key")
     var id: Identifier? = ""
     
@@ -32,6 +33,9 @@ final class Product: Model,NodeInitializable {
     }
     
     init(node:Node) throws {
+        if node.isNull{
+            throw Abort(.notFound)
+        }
         refproduct = try node.get("refproduct")
         name = try node.get("name")
         picture = try node.get("picture")

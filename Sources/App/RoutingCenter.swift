@@ -8,10 +8,18 @@
 
 import Vapor
 
-final class RoutingCenter: RouteCollection, EmptyInitializable {
+final class RoutingCenter: RouteCollection {
+    
+    let drop: Droplet
+    
+    init(droplet: Droplet){
+        self.drop = droplet
+    }
+    
     func build(_ builder: RouteBuilder) throws {
-        try builder.resource("api/v1/stores", StoresController.self)
-        try builder.resource("api/v1/products", ProductsController.self)
+        let v1 = builder.grouped("api/v1")
+        try v1.resource("/stores", StoresController.self)
+        try v1.resource("/products", ProductsController.self)
     }
 }
 
@@ -22,8 +30,17 @@ extension Request {
         return product
     }
     
+    func product(json:JSON) throws -> Product {
+        let product = try Product(json: json)
+        return product
+    }
+    
     func store() throws -> Store {
         guard let json = json else { throw Abort.badRequest }
         return try Store(json: json)
+    }
+    
+    func stock(json:JSON) throws -> Stock {
+        return try Stock(json: json)
     }
 }
