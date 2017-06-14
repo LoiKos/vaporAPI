@@ -16,16 +16,16 @@ extension Config{
     
     // Care if in your database you have 'fluent' table registering your other tables then they won't be added during preparations phase.
     private func setupPreparations() throws {
-
         preparations.append(Product.self)
         preparations.append(Store.self)
+        preparations.append(Stock.self)
     }
 }
 
 extension Droplet {
     
     public func setup() throws {
-        try collection(RoutingCenter.self)
+        try collection( RoutingCenter( droplet:self ) )
     }
 }
 

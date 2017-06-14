@@ -20,6 +20,7 @@ final class RoutingCenter: RouteCollection {
         let v1 = builder.grouped("api/v1")
         try v1.resource("/stores", StoresController.self)
         try v1.resource("/products", ProductsController.self)
+        try v1.grouped("/stores/:refstore/products").collection(StockController.self)
     }
 }
 
