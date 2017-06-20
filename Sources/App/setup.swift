@@ -8,12 +8,12 @@ extension Config{
         try setupProviders()
         try setupPreparations()
     }
-    
+
     // Setup for all required provider
     private func setupProviders() throws {
         try addProvider(PostgreSQLProvider.Provider.self)
     }
-    
+
     // Care if in your database you have 'fluent' table registering your other tables then they won't be added during preparations phase.
     private func setupPreparations() throws {
         preparations.append(Product.self)
@@ -23,9 +23,8 @@ extension Config{
 }
 
 extension Droplet {
-    
+
     public func setup() throws {
         try collection( RoutingCenter( droplet:self ) )
     }
 }
-
