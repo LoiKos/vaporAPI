@@ -12,7 +12,13 @@ import Foundation
 class Reference {
 
     // Singleton
-    static let sharedInstance = Reference()
+    static let sharedInstance : Reference = {
+      let instance = Reference()
+      #if os(Linux)
+        srand(UInt32(time(nil)))
+      #endif
+      return instance
+    }()
 
     // Variables
     private let charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".characters.map { String($0) }

@@ -42,6 +42,9 @@ final class ProductsController: ResourceRepresentable, EmptyInitializable{
     }
     
     func update(request: Request, product: Product) throws -> ResponseRepresentable {
+        if request.json?["name"] == nil {
+            try request.json?.set("name", product.name)
+        }
         let new = try request.product()
         product.name = new.name
         if new.picture != nil || new.picture != ""{

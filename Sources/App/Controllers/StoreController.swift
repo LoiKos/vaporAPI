@@ -11,7 +11,7 @@ import HTTP
 import PostgreSQLDriver
 
 final class StoresController: ResourceRepresentable, EmptyInitializable{
-    
+
     func index(request: Request) throws -> ResponseRepresentable {
         let offset = request.query?["offset"]?.int ?? 0
         var json : JSON = JSON()
@@ -33,23 +33,26 @@ final class StoresController: ResourceRepresentable, EmptyInitializable{
         json["total"] = JSON(try Store.count())
         return json
     }
-    
+
     func create(request: Request) throws -> ResponseRepresentable {
         let store = try request.store()
         try store.save()
         return store
     }
-    
+
     func show(request: Request, store:Store) throws -> ResponseRepresentable {
         return store
     }
-    
+
     func delete(request: Request, store:Store) throws -> ResponseRepresentable {
         try store.delete()
         return store
     }
-    
+
     func update(request: Request, store:Store) throws -> ResponseRepresentable {
+        if request.json?["name"] == nil {
+            try request.json?.set("name", store.name)
+        }
         let new = try request.store()
         store.name = new.name
         store.picture = new.picture ?? store.picture
@@ -59,7 +62,7 @@ final class StoresController: ResourceRepresentable, EmptyInitializable{
         try store.save()
         return store
     }
-    
+
     func makeResource() -> Resource<Store> {
         return Resource(
             index: index,

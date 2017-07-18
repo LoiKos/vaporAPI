@@ -53,8 +53,20 @@ final class StockController : RouteCollection, EmptyInitializable {
         
         return try db.transaction({ con in
             let raw = try con.raw(query, [id,limit,offset])
-            json["data"] = try raw.converted(to: JSON.self, in: nil)
-            
+            if (raw.array != nil) {
+                var data = [JSON]()
+                for item in raw.array! {
+                    var json = try Stock(node: item).makeJSON()
+                    try json.set("product_name",item.wrapped.object?["product_name"])
+                    try json.set("product_picture",item.wrapped.object?["product_picture"])
+                    try json.set("product_creationdate",item.wrapped.object?["product_creationdate"])
+                    try json.set("product_refproduct",item.wrapped.object?["product_refproduct"])
+                    data.append(json)
+                }
+                json["data"] = JSON(data)
+            } else {
+                json["data"] = try raw.converted(to: JSON.self, in: nil)
+            }
             let raw2 = try con.raw("select count(*) from stock where stock.refstore = $1", [id])
             let value_count:[Int] = try JSON(node: raw2).get("count")
             json["total"] = JSON(value_count[0])
@@ -104,11 +116,18 @@ final class StockController : RouteCollection, EmptyInitializable {
         let query = "select stock.*, products.name as product_name, products.picture as product_picture, products.creationdate as product_creationdate, products.refproduct as product_refproduct from stock inner join products on products.refproduct = stock.refproduct where stock.refstore = $1 and stock.refproduct = $2 and products.refproduct = $2 LIMIT 1"
         
         let raw = try Stock.database?.raw(query, [refstore,refproduct])
-        if raw?.wrapped.array?.count == 0 {
-            throw Abort(.notFound)
+
+        guard let node = raw?.array?.first,
+              let object = node.object else {
+                throw Abort(.notFound)
         }
         
-        return try JSON(node:raw?.wrapped.array?[0])
+        var json = try Stock.init(node:node).makeJSON()
+        try json.set("product_name", object["product_name"])
+        try json.set("product_picture", object["product_picture"])
+        try json.set("product_creationdate", object["product_creationdate"])
+        try json.set("product_refproduct", object["product_refproduct"])
+        return json
     }
     
     func delete(request: Request) throws -> ResponseRepresentable {
@@ -129,7 +148,7 @@ final class StockController : RouteCollection, EmptyInitializable {
         return try db.transaction({ con in
             if let stock = try con.raw(stock_delete, [refstore,refproduct]).array?.first,
                 let product = try con.raw(product_delete, [refproduct]).array?.first {
-                var json = JSON(node: stock)
+                var json = try Stock(node: stock).makeJSON()
                 
                 json["product_refproduct"] = try product.get("refproduct")
                 json["product_name"] = try product.get("name")
@@ -138,7 +157,7 @@ final class StockController : RouteCollection, EmptyInitializable {
 
                 return json
             } else {
-                throw Abort(.internalServerError)
+                throw Abort(.notFound)
             }
         })
     }
@@ -157,15 +176,15 @@ final class StockController : RouteCollection, EmptyInitializable {
         
         return try db.transaction({ con in
             let stock = try Stock(node: try con.raw("select * from stock where refstore = $1 and refproduct = $2",[refstore,refproduct]).array?.first)
+            
             guard let product = try Product.makeQuery(con).find(refproduct) else { throw Abort(.notFound) }
+            
             let (productjson,stockjson) = try split(json: request.json)
             
             if let name = productjson.object?["name"]?.wrapped.string {
-                print("Update name")
                 product.name = name
             }
             if let picture = productjson.object?["picture"]?.wrapped.string {
-                print("Update picture")
                 product.picture = picture
             }
             try product.makeQuery(con).save()
@@ -183,18 +202,17 @@ final class StockController : RouteCollection, EmptyInitializable {
             }
             
             if let priceht = stockjson.object?["priceht"]?.wrapped.double {
-                stock.priceht = Int((priceht*100).rounded())
+                stock.price = priceht
                 modified = true
             }
             
             if let vat = stockjson.object?["vat"]?.wrapped.double {
-                stock.vat = Int((vat*100).rounded())
+                stock.vat = vat
                 modified = true
             }
             
             if modified {
-                stock.lastupdate = Date()
-                try con.raw("update stock set status = $1, quantity  = $2, vat  = $3, priceht = $4, lastupdate = $5 where refstore = $6 and refproduct = $7", [stock.status, stock.quantity, stock.vat, stock.priceht, stock.lastupdate, stock.refstore, stock.refproduct])
+                try stock.updateOn(con: con)
             }
             
             var response = try stock.makeJSON()
@@ -217,8 +235,8 @@ final class StockController : RouteCollection, EmptyInitializable {
         var stock = [String:StructuredData]()
         
         for key in keys{
-            if ["name","picture","product_name","product_picture"].contains(key){
-                product[key] = try json?.get(key)
+            if ["product_name","product_picture"].contains(key){
+                product[key.replacingOccurrences(of: "product_", with: "")] = try json?.get(key)
             } else if ["status","priceht","vat","quantity"].contains(key){
                 stock[key] = try json?.get(key)
             } else {

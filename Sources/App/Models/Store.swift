@@ -96,11 +96,20 @@ extension Store: JSONConvertible {
                 throw Abort(.badRequest)
             }
         }
+    
+        
+        let vat: Int?
+        
+        if let jsonvat = try json.get("vat") as Double? {
+            vat = Int((jsonvat * 100).rounded())
+        } else {
+            vat = nil
+        }
         
         try self.init(
             name: json.get("name"),
             picture: json.get("picture"),
-            vat: json.get("vat"),
+            vat: vat,
             currency: json.get("currency"),
             merchantkey: json.get("merchantkey")
         )
@@ -111,7 +120,11 @@ extension Store: JSONConvertible {
         try json.set("refstore", refstore)
         try json.set("name", name)
         try json.set("picture", picture)
-        try json.set("vat", vat)
+        if let vat = vat {
+            try json.set("vat", Double(vat)/100)
+        } else {
+            try json.set("vat", vat)
+        }
         try json.set("currency", currency)
         try json.set("merchantkey", merchantkey)
         return json
