@@ -3,7 +3,7 @@ import HTTP
 import PostgreSQLDriver
 
 final class ProductsController: ResourceRepresentable, EmptyInitializable{
-    
+
     func index(request: Request) throws -> ResponseRepresentable {
         let offset = request.query?["offset"]?.int ?? 0
         var json : JSON = JSON()
@@ -25,22 +25,22 @@ final class ProductsController: ResourceRepresentable, EmptyInitializable{
         json["total"] = JSON(try Product.count())
         return json
     }
-    
+
     func create(request: Request) throws -> ResponseRepresentable {
         let product = try request.product()
         try product.save()
-        return product
+        return try Response(status: .created,json: product.makeJSON())
     }
-    
+
     func show(request: Request, product: Product) throws -> ResponseRepresentable {
         return product
     }
-    
+
     func delete(request: Request, product: Product) throws -> ResponseRepresentable {
         try product.delete()
         return product
     }
-    
+
     func update(request: Request, product: Product) throws -> ResponseRepresentable {
         if request.json?["name"] == nil {
             try request.json?.set("name", product.name)
@@ -53,7 +53,7 @@ final class ProductsController: ResourceRepresentable, EmptyInitializable{
         try product.save()
         return product
     }
-    
+
     func makeResource() -> Resource<Product> {
         return Resource(
             index: index,

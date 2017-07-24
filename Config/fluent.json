@@ -2,5 +2,7 @@
     "driver": "postgresql",
     "keyNamingConvention": "camelCase",
     "pivotNameConnector": "_",
-    "autoForeignKeys": true
+    "autoForeignKeys": true,
+    "log":false,
+    "maxConnections": 10
 }

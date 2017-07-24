@@ -9,6 +9,7 @@
 import Vapor
 import HTTP
 import PostgreSQLDriver
+import Foundation
 
 final class StoresController: ResourceRepresentable, EmptyInitializable{
 
@@ -35,9 +36,13 @@ final class StoresController: ResourceRepresentable, EmptyInitializable{
     }
 
     func create(request: Request) throws -> ResponseRepresentable {
+        //let uuid = UUID().uuidString
+        //print("start create \(uuid) : \(Date().timeIntervalSince1970)") 6D5D7E6F-879C-4BA9-A7F5-3ACBB6655FB7 : 1500555538.31241
         let store = try request.store()
         try store.save()
-        return store
+        //print("end create \(uuid) : \(Date().timeIntervalSince1970)") 6D5D7E6F-879C-4BA9-A7F5-3ACBB6655FB7 - 1500555538.32763
+        let response = try Response(status: .created, json: store.makeJSON())
+        return response
     }
 
     func show(request: Request, store:Store) throws -> ResponseRepresentable {
