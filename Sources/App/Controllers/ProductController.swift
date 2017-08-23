@@ -6,24 +6,20 @@ final class ProductsController: ResourceRepresentable, EmptyInitializable{
 
     func index(request: Request) throws -> ResponseRepresentable {
         let offset = request.query?["offset"]?.int ?? 0
-        var json : JSON = JSON()
-        if let limit = request.query?["limit"]?.int {
-            json["data"] = try Product.makeQuery().limit(limit, offset: offset).all().makeJSON()
+        let limit = request.query?["limit"]?.int ?? 0
+        
+        guard let db = Product.database else {
+            throw Abort.serverError
+        }
+        
+        return try db.transaction(){ conn in
+            var json = JSON()
+            json["data"] = try Product.makeQuery(conn).limit(raw: "\(limit > 0 ? "\(limit)" : "all") OFFSET \(offset)").all().makeJSON()
             json["limit"] = JSON(limit)
             json["offset"] = JSON(offset)
-        } else if offset > 0 {
-            let products = try Product.database?.raw("Select * from products offset $1", [offset])
-            var result = [Product]()
-            try products?.array?.forEach({ node in
-                result.append(try node.converted(to: Product.self))
-            })
-            json["data"] = try result.makeJSON()
-            json["offset"] = JSON(offset)
-        } else {
-            json["data"] = try Product.all().makeJSON()
+            json["total"] = JSON(try Product.makeQuery(conn).count())
+            return json
         }
-        json["total"] = JSON(try Product.count())
-        return json
     }
 
     func create(request: Request) throws -> ResponseRepresentable {

@@ -6,7 +6,7 @@ let config = try Config()
 try config.setup()
 
 let drop = try Droplet(config)
-drop.database?.ThreadConnectionPool.connectionPendingTimeoutSeconds = 30
+drop.database?.threadConnectionPool.connectionPendingTimeoutSeconds = 30
 
 try drop.setup()
 

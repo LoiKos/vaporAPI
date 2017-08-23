@@ -69,8 +69,8 @@ extension Store: Preparation{
     static func prepare(_ database: Database) throws {
         try database.create(self) { builder in
             builder.id()
-            builder.string("name")
             builder.string("picture",optional: true)
+            builder.string("name")
             builder.int("vat" ,optional: true)
             builder.string("currency" ,optional: true)
             builder.string("merchantkey", optional: true)
