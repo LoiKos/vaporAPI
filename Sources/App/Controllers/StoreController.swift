@@ -26,7 +26,13 @@ final class StoresController: ResourceRepresentable, EmptyInitializable{
         
         return try db.transaction(){ conn in
             json["total"] = JSON(try Store.makeQuery(conn).count())
-            json["data"] = try Store.makeQuery(conn).limit(raw: "\(limit > 0 ? "\(limit)" : "all") OFFSET \(offset)").all().makeJSON()
+            if limit > 0 || offset > 0 {
+                print("with limit or offset")
+                json["data"] = try Store.makeQuery(conn).limit(raw: "\(limit > 0 ? "\(limit)" : "all") OFFSET \(offset)").all().makeJSON()
+            } else {
+                 print("without limit or offset")
+                 json["data"] = try Store.makeQuery(conn).all().makeJSON()
+            }
             return json
         }
     }
