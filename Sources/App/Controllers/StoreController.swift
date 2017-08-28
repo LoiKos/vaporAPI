@@ -20,13 +20,13 @@ final class StoresController: ResourceRepresentable, EmptyInitializable{
         guard let db = Store.database else {
             throw Abort.serverError
         }
+        var json = JSON()
+        json["limit"] = JSON(limit)
+        json["offset"] = JSON(offset)
         
         return try db.transaction(){ conn in
-            var json = JSON()
-            json["data"] = try Store.makeQuery(conn).limit(raw: "\(limit > 0 ? "\(limit)" : "all") OFFSET \(offset)").all().makeJSON()
-            json["limit"] = JSON(limit)
-            json["offset"] = JSON(offset)
             json["total"] = JSON(try Store.makeQuery(conn).count())
+            json["data"] = try Store.makeQuery(conn).limit(raw: "\(limit > 0 ? "\(limit)" : "all") OFFSET \(offset)").all().makeJSON()
             return json
         }
     }
