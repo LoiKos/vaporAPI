@@ -1,0 +1,8 @@
+module: App
+author: LoiKos
+
+clean: true
+exclude: [Packages]
+min_acl: internal
+
+xcodebuild_arguments: [-project, vaporMbao.xcodeproj, -target, App, LIBRARY_SEARCH_PATHS=.build/debug]
