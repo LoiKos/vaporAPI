@@ -47,5 +47,16 @@ class SetupTests: XCTestCase {
             self.testDroplet()
         }
     }
+    
+    static var allTests : [(String, (SetupTests) -> () throws -> Void)] {
+        return [
+            ("testConfig", testConfig),
+            ("testSetupConfig", testSetupConfig),
+            ("testDroplet", testDroplet),
+            ("testConfigPerformance", testConfigPerformance),
+            ("testSetupPerformance", testSetupPerformance),
+            ("testDropletPerformance", testDropletPerformance)
+        ]
+    }
 
 }

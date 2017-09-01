@@ -77,11 +77,11 @@ extension Product: Preparation{
 extension Product: JSONConvertible {
     convenience init(json: JSON) throws {
         guard let keys = json.object?.keys,
-            !keys.isEmpty else { throw Abort(.badRequest) }
+            !keys.isEmpty else { throw Abort(.accepted) }
     
         for key in keys {
             if !["name","picture"].contains(key) {
-                throw Abort(.badRequest)
+                throw Abort(.accepted)
             }
         }
         try self.init(name: json.get("name"), picture: json.get("picture"))
